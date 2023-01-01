@@ -17,9 +17,9 @@ class Amenities(BaseModel):
     def __str__(self) -> str:
         return self.amenity_name
 
-class Hotel(BaseModel):
-    hotel_name= models.CharField(max_length=100)
-    hotel_price = models.IntegerField()
+class rental(BaseModel):
+    rental_name= models.CharField(max_length=100)
+    rental_price = models.IntegerField()
     description = models.TextField()
     amenities = models.ManyToManyField(Amenities)
     room_count = models.IntegerField(default=10)
@@ -28,15 +28,43 @@ class Hotel(BaseModel):
         return self.hotel_name
 
 
-class HotelImages(BaseModel):
-    hotel= models.ForeignKey(Hotel ,related_name="images", on_delete=models.CASCADE)
-    images = models.ImageField(upload_to="hotels")
+class rentalImages(BaseModel):
+    rental= models.ForeignKey(rental ,related_name="images", on_delete=models.CASCADE)
+    images = models.ImageField(upload_to="rental")
 
 
 
-class HotelBooking(BaseModel):
-    hotel= models.ForeignKey(Hotel  , related_name="hotel_bookings" , on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="user_bookings" , on_delete=models.CASCADE)
+class Reservation(BaseModel):
+    rental_name= models.ForeignKey(rental  , related_name="Reservation" , on_delete=models.CASCADE)
+    Reservation_id= models.ForeignKey(User, related_name="Reservation_id" , on_delete=models.CASCADE)
     start_date = models.DateField()
     end_date = models.DateField()
-    booking_type= models.CharField(max_length=100,choices=(('Pre Paid' , 'Pre Paid') , ('Post Paid' , 'Post Paid')))
+    Reservation_type= models.CharField(max_length=100,choices=(('Pre Paid' , 'Pre Paid') , ('Post Paid' , 'Post Paid')))
+
+def confirm(request, pk = None):
+    if request.method == 'POST':
+        if pk:
+             rental_name = rental.objects.get(pk = pk)
+             guest_id = request.user
+             check_in = request.session['check_in'] 
+             check_out = request.session['check_out']
+             reservation = Reservation(
+             check_in = check_in, 
+             check_out = check_out,
+             rental_id = rental_id.id,
+             guest_id = guest_id.id
+             )
+             reservation.save()
+
+             book_in = datetime.strptime(check_in, '%Y-%m-%d').date()
+             book_out = datetime.strptime(check_out, '%Y-%m-%d').date()
+             reserved = False
+
+             delta = timedelta(days = 1)
+             while book_in <= book_out:
+                  rental_id.reserved = True
+                  book_in += delta
+             else:
+                  rental_id.reserved = False
+
+      return render(request, "system/reserve.html", args)
